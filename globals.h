@@ -1,6 +1,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include <map>
+
 namespace globals
 {
   const int SPRITE_SCALE = 3.0f;
@@ -25,5 +27,7 @@ struct Vector2
     return Vector2(0, 0);
   }
 };
+
+extern std::map<char, Vector2> characterSpriteLocations;
 
 #endif

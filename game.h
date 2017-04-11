@@ -1,8 +1,12 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <map>
+
 #include "player.h"
 #include "pipe.h"
+#include "ui_text.h"
+#include "globals.h"
 
 class Graphics;
 
@@ -11,7 +15,6 @@ class Game
 public:
   Game();
   ~Game();
-
 
 private:
   void GameLoop();
@@ -28,10 +31,16 @@ private:
   Sprite _backgroundSprite;
   Sprite _floor;
   Sprite _floor2;
+  Sprite _gameOverSprite;
+
+  /* Restart Sprite will be changed with Button class */
+  Sprite _restartSprite;
 
   Pipe _pipe1;
   Pipe _pipe2;
   Pipe _pipe3;
+
+  Text _scoreText;
 
   bool _gameIsRunning;
 
@@ -44,5 +53,6 @@ private:
   unsigned int _newTriggeredColliderId;
 
 };
+
 
 #endif

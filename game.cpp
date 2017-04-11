@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <iostream>
+#include <string>
 
 #include <tr1/random>
 
@@ -10,6 +11,7 @@
 #include "boxcollider.h"
 
 unsigned int ColliderId = 1;
+std::map<char, Vector2> characterSpriteLocations;
 
 namespace
 {
@@ -28,6 +30,18 @@ Game::Game()
   _score = 0;
   _triggeredColliderId = 0;
   _newTriggeredColliderId = 0;
+
+  characterSpriteLocations['0'] = Vector2(144, 55);
+  characterSpriteLocations['1'] = Vector2(150, 55);
+  characterSpriteLocations['2'] = Vector2(156, 55);
+  characterSpriteLocations['3'] = Vector2(162, 55);
+  characterSpriteLocations['4'] = Vector2(168, 55);
+  characterSpriteLocations['5'] = Vector2(174, 55);
+  characterSpriteLocations['6'] = Vector2(180, 55);
+  characterSpriteLocations['7'] = Vector2(186, 55);
+  characterSpriteLocations['8'] = Vector2(192, 55);
+  characterSpriteLocations['9'] = Vector2(198, 55);
+
   this->GameLoop();
 }
 
@@ -45,7 +59,7 @@ void Game::GameLoop()
   _graphics = &graphics;
 
 /********************************************************************************************/
-  this->_backgroundSprite = Sprite(graphics, "Content/Sprite.png", 0, 0, 145, 256, 100, 100);
+  this->_backgroundSprite = Sprite(graphics, "Content/Sprite.png", 0, 0, 144, 256, 100, 100);
 /********************************************************************************************/
 
 /********************************************************************************************/
@@ -67,6 +81,17 @@ void Game::GameLoop()
   this->_floor = Sprite(graphics, "Content/Sprite.png", 144, 0, 168, 56, 0, 203 * globals::SPRITE_SCALE);
   this->_floor2 = Sprite(graphics, "Content/Sprite.png", 144, 0, 168, 56, _floor.GetX() + _floor.GetScaledWidth(), _floor.GetY());
 /********************************************************************************************/
+
+  this->_scoreText = Text(graphics, "Content/Sprite.png", 144, 55, 6, 8, globals::SCREEN_WIDTH / 2, 1.1 * globals::SCREEN_HEIGHT / 6, 1.5f);
+  this->_scoreText.SetText("0");
+/********************************************************************************************/
+
+  this->_gameOverSprite = Sprite(graphics, "Content/Sprite.png", 144, 63, 36, 27, globals::SCREEN_WIDTH / 2 - 18 * 3 * globals::SPRITE_SCALE, globals::SCREEN_HEIGHT / 2 - 25 * 3 * globals::SPRITE_SCALE, 3.0f);
+  this->_gameOverSprite.SetVisibility(false);
+
+  /* Restart Sprite will be changed with Button class */
+  this->_restartSprite = Sprite(graphics, "Content/Sprite.png", 144, 90, 47, 16, globals::SCREEN_WIDTH / 2 - 23 * 2 * globals::SPRITE_SCALE, _gameOverSprite.GetY() + 50 * 2 * globals::SPRITE_SCALE, 2.0f);
+  this->_restartSprite.SetVisibility(false);
 
   int LAST_UPDATE_TIME = SDL_GetTicks();
 
@@ -135,6 +160,13 @@ void Game::Draw(Graphics &graphics)
   this->_floor.Draw(graphics, _floor.GetX(), _floor.GetY());
   this->_floor2.Draw(graphics, _floor2.GetX(), _floor2.GetY());
 
+  this->_scoreText.Draw(graphics);
+
+  if (_gameOverSprite.GetVisibility())
+  {
+    this->_gameOverSprite.Draw(graphics, _gameOverSprite.GetX(), _gameOverSprite.GetY(), 3.0f);
+    this->_restartSprite.Draw(graphics, _restartSprite.GetX(), _restartSprite.GetY(), 2.0f);
+  }
   graphics.Flip();
 }
 
@@ -143,6 +175,8 @@ void Game::Update(float DeltaTime)
   if(_player.GetY() + _player.GetScaledWidth() - 10 * globals::SPRITE_SCALE >= _floor.GetY())
   {
     _gameIsRunning = false;
+    this->_gameOverSprite.SetVisibility(true);
+    this->_restartSprite.SetVisibility(true);
   }
 
 /***************************************************************************************************************************************************/
@@ -190,7 +224,12 @@ void Game::Update(float DeltaTime)
     for (size_t i = 0; i < colliderCount; i++)
     {
       bool checkResult = _boxColliders[i]->CheckCollision(playerCollider);
-      if(checkResult) _gameIsRunning = false;
+      if(checkResult)
+      {
+        _gameIsRunning = false;
+        this->_gameOverSprite.SetVisibility(true);
+        this->_restartSprite.SetVisibility(true);
+      }
     }
 
 
@@ -222,7 +261,7 @@ void Game::Update(float DeltaTime)
         {
           _score++;
           _newTriggeredColliderId = _triggeredColliderId;
-          printf("%d\n", _score);
+          _scoreText.SetText(std::to_string(_score));
         }
       }
     }
@@ -253,6 +292,8 @@ int Game::GetRandomInt(int start, int interval)
 void Game::Restart()
 {
   _score = 0;
+  _scoreText.Reset();
+  _scoreText.SetText("0");
 
   _player.SetX(playerSpawnPoint.x);
   _player.SetY(playerSpawnPoint.y);
@@ -275,5 +316,9 @@ void Game::Restart()
   _pipe3.SetX(_pipe2.GetX() + pipeSpace);
   _pipe3.SetY(randPos);
 
+  _triggeredColliderId = 0;
+  _newTriggeredColliderId = 0;
+  this->_gameOverSprite.SetVisibility(false);
+  this->_restartSprite.SetVisibility(false);
   _gameIsRunning = true;
 }
