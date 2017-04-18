@@ -1,0 +1,1 @@
+Press space to jump, R to restart, and ESC to exit.
